@@ -126,11 +126,13 @@ Puppet::Type.type(:virt).provide(:libvirt) do
   end
   def smbios
     args = []
-    parameters = resource[:smbios]
-    parameters.each do |key,value|
-      args << ["--smbios"] << ["#{key}=#{value}"]
+    if  resource[:smbios]
+      parameters = resource[:smbios]
+      parameters.each do |key,value|
+        args << ["--smbios"] << ["#{key}=#{value}"]
+      end
     end
-    args  
+    args
   end
   def create_disks
     # Primary disk / Legacy virt_path option
