@@ -178,10 +178,16 @@ Puppet::Type.type(:virt).provide(:libvirt) do
 
   # Creates network arguments for virt-install command
   def network
-    debug "Network paramenters"
+    debug "Network parameters"
     network = []
     parameters = ""
     parameters.concat(",model=virtio") if resource[:virtio_for_net] == 'true'
+
+    filterrefs = resource[:clean_traffic]
+    unless filterrefs.nil?
+      filterrefs.each { |filterrefs| network << ["--filterref",filterrefs] }
+      parameters.concat(",filterref=clean-traffic")
+    end
 
     iface = resource[:interfaces]
     case iface
@@ -221,6 +227,15 @@ Puppet::Type.type(:virt).provide(:libvirt) do
   #TODO the Libvirt biding for ruby doesnt support this feature
   def interfaces=(value)
     warnonce "It is not possible to change interfaces settings for an existing guest."
+  end
+
+  def clean_traffic
+    warnonce "It is not possible to change filter settings for an existing guest - yet ;)"
+    resource[:clean_traffic]
+  end
+
+  def clean_traffic=(value)
+    warnonce "It is not possible to change filter settings for an existing guest - yet :("
   end
 
   # Setup the virt-install graphic configuration arguments

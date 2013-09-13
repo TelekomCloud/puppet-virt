@@ -566,6 +566,16 @@ Image files must end with `*.img`, `*.qcow` or `*.qcow2`"
       end
     end
 
+    newproperty(:clean_traffic, :array_matching => :all) do
+      desc "TBD"
+      validate do |value|
+        unless value.is_a?(Array) or value.is_a?(String)
+          self.devfail "interfaces field must be a String or an Array"
+        end
+      end
+    end
+
+
     newproperty(:macaddrs, :array_matching => :all) do
       desc "Fixed MAC address for the guest;
 If this parameter is omitted, or the value \"RANDOM\" is specified a suitable address will be randomly generated.
