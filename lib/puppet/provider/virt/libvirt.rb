@@ -8,6 +8,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
   commands :virsh => "/usr/bin/virsh"
   commands :grep => "/bin/grep"
   commands :ip => "/sbin/ip"
+  commands :qemu_img => "/usr/bin/qemu-img"
 
   # The provider is chosen by virt_type
   confine :feature => :libvirt
@@ -52,6 +53,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
 
       args = generalargs(bootoninstall) + network + graphic + bootargs
       debug "[INFO] virt-install arguments: #{args}"
+      create_disks
       virtinstall args
     end
 
@@ -122,20 +124,46 @@ Puppet::Type.type(:virt).provide(:libvirt) do
 
     arguments
   end
+  def create_disks
+    # Primary disk / Legacy virt_path option
+    if resource[:virt_path] and resource[:disk_size] 
+
+      path = resource[:virt_path].split('=')[1]
+      path = path.split(',')[0] 
+      size = resource[:disk_size].split('=')[1]
+      args = ["create"]
+      args << ["-f"+resource[:disks_format]] if resource[:disks_format] 
+      args << path << "#{size}G"
+      qemu_img args
+    end
+    
+    # Additional disks
+    disks = [] 
+    disks = resource[:virt_disks] if resource[:virt_disks]
+    disks.each do |path,size|
+      args = ["create"]
+      args << ["-f"+resource[:disks_format]] if resource[:disks_format] 
+      args << path << "#{size}G"
+      qemu_img args
+    end
+  end
 
   def diskargs
     parameters = ""
     parameters = resource[:virt_path] if resource[:virt_path]
     parameters.concat("," + resource[:disk_size]) if resource[:disk_size]
-    parameters.concat(",bus=virtio") if resource[:virtio_for_disks] == 'true' 
+    parameters.concat(",bus=virtio") if resource[:virtio_for_disks] == 'true'
+    parameters.concat(",format="+resource[:disks_format]) if resource[:disks_format]
     parameters.empty? ? [] : ["--disk", parameters]
   end
 
   def additional_diskargs
-    disks = resource[:virt_disks]
+    disks = []
     args = []
+    disks = resource[:virt_disks] if resource[:virt_disks]
     parameters = ""
     parameters.concat(",bus=virtio") if resource[:virtio_for_disks] == 'true'
+    parameters.concat(",format="+resource[:disks_format]) if resource[:disks_format]
       disks.each do |key,value|
         args << ["--disk=#{key},size=#{value}"+parameters]
       end
