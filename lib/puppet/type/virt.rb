@@ -395,6 +395,12 @@ Image files must end with `*.img`, `*.qcow` or `*.qcow2`"
     newparam(:disks_format) do
       desc "Define image format of disks"
     end
+    newparam(:disks_cache) do
+      desc "Define cache disk's cache type"
+    end
+    newparam(:qcow2_preallocation) do
+      desc "Define preallocation type for qcow2 disks"
+    end
     newparam(:virtio_for_disks) do
       desc "Using virtio for block devices"
     end

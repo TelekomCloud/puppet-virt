@@ -143,6 +143,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
       size = resource[:disk_size].split('=')[1]
       args = ["create"]
       args << ["-f"+resource[:disks_format]] if resource[:disks_format] 
+      args << ["-opreallocation="+resource[:qcow2_preallocation]] if resource[:qcow2_preallocation]
       args << path << "#{size}G"
       qemu_img args
     end
@@ -153,6 +154,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
     disks.each do |path,size|
       args = ["create"]
       args << ["-f"+resource[:disks_format]] if resource[:disks_format] 
+      args << ["-opreallocation="+resource[:qcow2_preallocation]] if resource[:qcow2_preallocation]
       args << path << "#{size}G"
       qemu_img args
     end
@@ -164,6 +166,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
     parameters.concat("," + resource[:disk_size]) if resource[:disk_size]
     parameters.concat(",bus=virtio") if resource[:virtio_for_disks] == 'true'
     parameters.concat(",format="+resource[:disks_format]) if resource[:disks_format]
+    parameters.concat(",cache="+resource[:disks_cache]) if resource[:disks_cache]
     parameters.empty? ? [] : ["--disk", parameters]
   end
 
@@ -174,6 +177,7 @@ Puppet::Type.type(:virt).provide(:libvirt) do
     parameters = ""
     parameters.concat(",bus=virtio") if resource[:virtio_for_disks] == 'true'
     parameters.concat(",format="+resource[:disks_format]) if resource[:disks_format]
+    parameters.concat(",cache="+resource[:disks_cache]) if resource[:disks_cache]
       disks.each do |key,value|
         args << ["--disk=#{key},size=#{value}"+parameters]
       end
